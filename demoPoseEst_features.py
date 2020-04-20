@@ -13,8 +13,8 @@ import cv2
 device = 'cuda'
 
 data = pickle.load(open('demo_data/toyexample_6_data.p', 'rb'))
-img = torch.tensor(np.moveaxis(cv2.imread('demo_data/toyexample_6.png'), 2, 0),
-    device = device, dtype = torch.float)[None,...]
+img = torch.tensor(cv2.imread('demo_data/toyexample_6.png'),
+    device = device, dtype = torch.float)[None, None, ...]
 
 pts3d_gt = torch.tensor(data['3d_points'], device=device, dtype=torch.float)
 n = pts3d_gt.size(0)
@@ -31,7 +31,7 @@ ite = 2000
 
 pts2d = pts2d_gt.clone() + torch.round(10*torch.randn_like(pts2d_gt))
 pts2d.requires_grad_()
-optimizer = torch.optim.SGD([{'params':pts2d}], lr=0.02)
+optimizer = torch.optim.SGD([{'params':pts2d}], lr=0.05)
 
 # model = torchvision.models.vgg11()
 # model.classifier = torch.nn.Linear(25088,n*2)
@@ -52,10 +52,12 @@ features_gt = F.grid_sample(img, pts2d_gt[None, ...])
 
 plt.figure()
 ax3 = plt.subplot(1, 3, 3)
-plt.plot(pts2d_gt[0,:,0].clone().detach().cpu().numpy(), pts2d_gt[0,:,1].clone().detach().cpu().numpy(),'rs',ms=10.5, label = 'Target locations')
+plt.imshow(img[0][0])
+plt.plot(pts2d_gt[0,:,0].clone().detach().cpu().numpy(), pts2d_gt[0,:,1].clone().detach().cpu().numpy(),'rs',ms=1, label = 'Target locations')
 plt.title('Keypoint evolution')
 ax2 = plt.subplot(1, 3, 2)
-plt.plot(pts2d_gt[0,:,0].clone().detach().cpu().numpy(), pts2d_gt[0,:,1].clone().detach().cpu().numpy(),'rs',ms=10.5, label = 'Target locations')
+plt.imshow(img[0][0])
+ax2.plot(pts2d_gt[0,:,0].clone().detach().cpu().numpy(), pts2d_gt[0,:,1].clone().detach().cpu().numpy(),'rs',ms=1, label = 'Target locations')
 plt.title('Pose evolution')
 
 for i in range(ite):
@@ -82,14 +84,14 @@ for i in range(ite):
     ini_pose = P_out.detach()
 
     if i==0:
-        ax3.plot(pts2d[0,:, 0].clone().detach().cpu().numpy(), pts2d[0,:, 1].clone().detach().cpu().numpy(), 'ko', ms=8.5, label='Initial location')
-        ax2.plot(pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), 'ko', ms=8.5, label='Initial location')
+        ax3.plot(pts2d[0,:, 0].clone().detach().cpu().numpy(), pts2d[0,:, 1].clone().detach().cpu().numpy(), 'ko', ms=1.5, label='Initial location')
+        ax2.plot(pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), 'ko', ms=1.5, label='Initial location')
     else:
         ax3.plot(pts2d[0,:, 0].clone().detach().cpu().numpy(), pts2d[0,:, 1].clone().detach().cpu().numpy(), 'k.', ms=0.5)
         ax2.plot(pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), 'k.', ms=0.5)
 
-ax3.plot(pts2d[0,:, 0].clone().detach().cpu().numpy(), pts2d[0,:, 1].clone().detach().cpu().numpy(), 'go', ms = 6, label = 'Final location')
-ax2.plot(pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), 'go', ms = 6, label = 'Final location')
+ax3.plot(pts2d[0,:, 0].clone().detach().cpu().numpy(), pts2d[0,:, 1].clone().detach().cpu().numpy(), 'go', ms = 1, label = 'Final location')
+ax2.plot(pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), 'go', ms = 1, label = 'Final location')
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
 plt.subplot(1,3,1)
