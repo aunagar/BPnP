@@ -18,5 +18,5 @@ source ~/.bpnp/bin/activate
 # conda install -y -c conda-forge ipython ninja cython matplotlib opencv=3.4 tqdm requests six scipy
 # conda install -y -c pytorch     pytorch torchvision cudatoolkit=10.1
 pip install kornia
-pip install -u ninja cython matplotlib opencv=3.4 tqdm requests six scipy
-pip install -u pytorch torchvision cudatoolkit=10.1
+pip install ninja cython matplotlib opencv tqdm requests six scipy
+pip install pytorch torchvision
