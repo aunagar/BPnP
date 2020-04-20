@@ -13,7 +13,7 @@ import cv2
 device = 'cuda'
 
 data = pickle.load(open('demo_data/toyexample_6_data.p', 'rb'))
-img = torch.tensor(np.moveaxis(cv2.imread('demo_data/toyexample_6.png', cv2.IMREAD_GRAYSCALE), 0, 1), device = device, dtype = torch.float)[None, None, ...]
+img = torch.tensor(cv2.imread('demo_data/toyexample_6.png', cv2.IMREAD_GRAYSCALE), device = device, dtype = torch.float)[None, None, ...]
 
 pts3d_gt = torch.tensor(data['3d_points'], device=device, dtype=torch.float)
 n = pts3d_gt.size(0)
@@ -47,16 +47,16 @@ losses = []
 track_2d = np.empty([ite,n,2])
 track_2d_pro = np.empty([ite,n,2])
 
-features_gt = F.grid_sample(img, pts2d_gt[None, ...])
+features_gt = F.grid_sample(img, torch.flip(pts2d_gt,(1,))[None, ...])
 
 plt.figure()
 ax3 = plt.subplot(1, 3, 3)
 plt.imshow(img[0][0].detach().cpu().numpy())
-plt.plot(pts2d_gt[0,:,0].clone().detach().cpu().numpy(), pts2d_gt[0,:,1].clone().detach().cpu().numpy(),'rs',ms=1, label = 'Target locations')
+plt.plot(pts2d_gt[0,:,1].clone().detach().cpu().numpy(), pts2d_gt[0,:,0].clone().detach().cpu().numpy(),'rs',ms=1, label = 'Target locations')
 plt.title('Keypoint evolution')
 ax2 = plt.subplot(1, 3, 2)
 plt.imshow(img[0][0].detach().cpu().numpy())
-ax2.plot(pts2d_gt[0,:,0].clone().detach().cpu().numpy(), pts2d_gt[0,:,1].clone().detach().cpu().numpy(),'rs',ms=1, label = 'Target locations')
+ax2.plot(pts2d_gt[0,:,1].clone().detach().cpu().numpy(), pts2d_gt[0,:,0].clone().detach().cpu().numpy(),'rs',ms=1, label = 'Target locations')
 plt.title('Pose evolution')
 
 for i in range(ite):
@@ -65,7 +65,7 @@ for i in range(ite):
     track_2d[i, :, :] = pts2d.clone().cpu().detach().numpy()
     P_out = bpnp(pts2d, pts3d_gt, K, ini_pose)
     pts2d_pro = BPnP.batch_project(P_out, pts3d_gt, K)
-    features_pro = F.grid_sample(img, pts2d_pro[None, ...])
+    features_pro = F.grid_sample(img, torch.flip(pts2d_pro,(1,))[None, ...])
     # loss = ((pts2d_pro - pts2d_gt)**2).mean() + ((pts2d_pro - pts2d)**2).mean()
     loss = ((features_pro - features_gt)**2).mean() + ((pts2d_pro - pts2d)**2).mean()
 
@@ -83,14 +83,14 @@ for i in range(ite):
     ini_pose = P_out.detach()
 
     if i==0:
-        ax3.plot(pts2d[0,:, 0].clone().detach().cpu().numpy(), pts2d[0,:, 1].clone().detach().cpu().numpy(), 'ko', ms=1.5, label='Initial location')
-        ax2.plot(pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), 'ko', ms=1.5, label='Initial location')
+        ax3.plot(pts2d[0,:, 1].clone().detach().cpu().numpy(), pts2d[0,:, 0].clone().detach().cpu().numpy(), 'ko', ms=1.5, label='Initial location')
+        ax2.plot(pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), 'ko', ms=1.5, label='Initial location')
     else:
-        ax3.plot(pts2d[0,:, 0].clone().detach().cpu().numpy(), pts2d[0,:, 1].clone().detach().cpu().numpy(), 'k.', ms=0.5)
-        ax2.plot(pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), 'k.', ms=0.5)
+        ax3.plot(pts2d[0,:, 1].clone().detach().cpu().numpy(), pts2d[0,:, 0].clone().detach().cpu().numpy(), 'k.', ms=0.5)
+        ax2.plot(pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), 'k.', ms=0.5)
 
-ax3.plot(pts2d[0,:, 0].clone().detach().cpu().numpy(), pts2d[0,:, 1].clone().detach().cpu().numpy(), 'go', ms = 1, label = 'Final location')
-ax2.plot(pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), 'go', ms = 1, label = 'Final location')
+ax3.plot(pts2d[0,:, 1].clone().detach().cpu().numpy(), pts2d[0,:, 0].clone().detach().cpu().numpy(), 'go', ms = 1, label = 'Final location')
+ax2.plot(pts2d_pro[0,:, 1].clone().detach().cpu().numpy(), pts2d_pro[0,:, 0].clone().detach().cpu().numpy(), 'go', ms = 1, label = 'Final location')
 plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
 
 plt.subplot(1,3,1)
