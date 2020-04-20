@@ -7,11 +7,12 @@ import torchvision
 from scipy.io import loadmat, savemat
 import kornia as kn
 import pickle
+import math
 import cv2
 
 device = 'cuda'
 
-data = pickle.load('demo_data/toyexample_6_data.p')
+data = pickle.load(open('demo_data/toyexample_6_data.p', 'rb'))
 img = torch.tensor(np.moveaxis(cv2.imread('demo_data/toyexample_6.png'), 2, 0),
     device = device, dtype = torch.float)[None,...]
 
@@ -19,7 +20,7 @@ pts3d_gt = torch.tensor(data['3d_points'], device=device, dtype=torch.float)
 n = pts3d_gt.size(0)
 R = kn.rotation_matrix_to_angle_axis(torch.eye(3, device = device))
 T = torch.tensor([0., 0., 0.], device = device)
-P = torch.cat((R, T))
+P = torch.cat((R, T))[None, ...]
 q_gt = kn.angle_axis_to_quaternion(P[0,0:3])
 
 K = torch.tensor(data['K'], device=device, dtype=torch.float)
@@ -39,15 +40,15 @@ optimizer = torch.optim.SGD([{'params':pts2d}], lr=0.02)
 
 R_init = torch.tensor(np.array([[math.cos(10*math.pi/180), -math.sin(10*math.pi/180), 0],
                                 [math.sin(10*math.pi/180), math.cos(10*math.pi/180), 0],
-                                [0, 0, 1]]), device = device)
+                                [0, 0, 1]]), device = device, dtype = torch.float)
 R_init = kn.rotation_matrix_to_angle_axis(R_init)
-T_init = torch.tensor([0., 0., 0.], device = device)
+T_init = torch.tensor([0., 0., 0.], device = device, dtype = torch.float)
 ini_pose = torch.cat((R_init, T_init)).reshape(1,6)
 losses = []
 track_2d = np.empty([ite,n,2])
 track_2d_pro = np.empty([ite,n,2])
 
-features_gt = F.grid_sample(img, pts2d_gt[None, None, ...])
+features_gt = F.grid_sample(img, pts2d_gt[None, ...])
 
 plt.figure()
 ax3 = plt.subplot(1, 3, 3)
@@ -63,7 +64,7 @@ for i in range(ite):
     track_2d[i, :, :] = pts2d.clone().cpu().detach().numpy()
     P_out = bpnp(pts2d, pts3d_gt, K, ini_pose)
     pts2d_pro = BPnP.batch_project(P_out, pts3d_gt, K)
-    features_pro = F.grid_sample(img, pts2d_pro[None, None, ...])
+    features_pro = F.grid_sample(img, pts2d_pro[None, ...])
     # loss = ((pts2d_pro - pts2d_gt)**2).mean() + ((pts2d_pro - pts2d)**2).mean()
     loss = ((features_pro - features_gt)**2).mean() + ((pts2d_pro - pts2d)**2).mean()
 
