@@ -31,7 +31,7 @@ ite = 2000
 
 pts2d = pts2d_gt.clone() + 100*torch.randn_like(pts2d_gt)
 pts2d.requires_grad_()
-optimizer = torch.optim.SGD([{'params':pts2d}], lr=0.2)
+optimizer = torch.optim.SGD([{'params':pts2d}], lr=0.02)
 
 # model = torchvision.models.vgg11()
 # model.classifier = torch.nn.Linear(25088,n*2)
