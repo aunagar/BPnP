@@ -13,8 +13,7 @@ import cv2
 device = 'cuda'
 
 data = pickle.load(open('demo_data/toyexample_6_data.p', 'rb'))
-img = torch.tensor(cv2.imread('demo_data/toyexample_6.png'),
-    device = device, dtype = torch.float)[None, None, ...]
+img = torch.tensor(cv2.imread('demo_data/toyexample_6.png', cv2.IMREAD_GRAYSCALE), device = device, dtype = torch.float)[None, None, ...]
 
 pts3d_gt = torch.tensor(data['3d_points'], device=device, dtype=torch.float)
 n = pts3d_gt.size(0)
@@ -52,11 +51,11 @@ features_gt = F.grid_sample(img, pts2d_gt[None, ...])
 
 plt.figure()
 ax3 = plt.subplot(1, 3, 3)
-plt.imshow(img[0][0])
+plt.imshow(img[0][0].detach().cpu().numpy())
 plt.plot(pts2d_gt[0,:,0].clone().detach().cpu().numpy(), pts2d_gt[0,:,1].clone().detach().cpu().numpy(),'rs',ms=1, label = 'Target locations')
 plt.title('Keypoint evolution')
 ax2 = plt.subplot(1, 3, 2)
-plt.imshow(img[0][0])
+plt.imshow(img[0][0].detach().cpu().numpy())
 ax2.plot(pts2d_gt[0,:,0].clone().detach().cpu().numpy(), pts2d_gt[0,:,1].clone().detach().cpu().numpy(),'rs',ms=1, label = 'Target locations')
 plt.title('Pose evolution')
 
