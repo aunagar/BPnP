@@ -13,7 +13,7 @@ import cv2
 device = 'cuda'
 
 data = pickle.load(open('demo_data/toyexample_6_data.p', 'rb'))
-img = torch.tensor(cv2.imread('demo_data/toyexample_6.png', cv2.IMREAD_GRAYSCALE), device = device, dtype = torch.float)[None, None, ...]
+img = torch.tensor(np.moveaxis(cv2.imread('demo_data/toyexample_6.png', cv2.IMREAD_GRAYSCALE), 0, 1), device = device, dtype = torch.float)[None, None, ...]
 
 pts3d_gt = torch.tensor(data['3d_points'], device=device, dtype=torch.float)
 n = pts3d_gt.size(0)
